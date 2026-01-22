@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const db = mysql.createPool({
-    host: 'db',
+    host: 'mysql',
     user: 'root',
     password: 'root',
     database: 'regime'

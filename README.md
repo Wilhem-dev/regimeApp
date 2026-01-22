@@ -299,3 +299,58 @@ projet docker/
 ![dashboard](img/img6.png)
 
 **Projet créé avec ❤️ en utilisant Docker et l'architecture microservices**
+
+## ☸️ Kubernetes et Minikube
+
+### Images Docker sur DockerHub
+
+Les images de ce projet ont été poussées sur **DockerHub** pour faciliter le déploiement avec Kubernetes :
+
+**Images disponibles** :
+
+- `88wil/regime-frontend:latest` - Interface React
+- `88wil/regime-backend:latest` - API Node.js
+- `mysql:8` - Base de données MySQL
+
+### Déploiement avec Minikube
+
+#### Installation de Minikube
+
+1. **Installez Minikube** : https://minikube.sigs.k8s.io/docs/start/
+2. **Installez kubectl** : https://kubernetes.io/docs/tasks/tools/
+
+#### Démarrer Minikube
+
+\`\`\`bash
+minikube start
+\`\`\`
+
+#### Déployer l'application
+
+L'application utilise un fichier de configuration Kubernetes \`regime-app.yaml\` qui définit :
+
+- **Deployments** : Gère les replicas des services frontend et backend
+- **Services** : Expose les ports et crée un load balancer
+- **PersistentVolumes** : Stockage persistant pour MySQL
+  Pour déployer :
+  \`\`\`bash
+
+# Appliquer la configuration
+
+kubectl apply -f regime-app.yaml
+
+# Vérifier le statut des pods
+
+kubectl get pods
+
+# Voir les services
+
+kubectl get svc
+
+# Accéder à l'application (génère une URL)
+
+## minikube service frontend
+
+![k8s](img/img7.png)
+![k8s](img/img8.png)
+![k8s](img/img9.png)
