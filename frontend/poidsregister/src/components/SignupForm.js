@@ -202,6 +202,15 @@ function SignupForm({ setUserId, switchToLogin }) {
               padding: 30px 20px !important;
             }
           }
+          @media (max-width: 480px) {
+            .auth-sidebar { display: none !important; }
+            .auth-wrapper { flex-direction: column !important; }
+            .auth-forms-container { padding: 18px !important; width: 100% !important; }
+            form { max-width: 100% !important; padding: 0 !important; }
+            input, select { padding: 12px !important; font-size: 1rem !important; }
+            button { width: 100% !important; }
+            .wrapper { box-shadow: none !important; border-radius: 12px !important; }
+          }
         `}
       </style>
       

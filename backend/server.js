@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const db = mysql.createPool({
-    host: 'mysql',
+    host: 'db',
     user: 'root',
     password: 'root',
     database: 'regime'
@@ -50,5 +50,17 @@ app.post('/weights', async (req, res) => {
     await db.query('INSERT INTO weights (user_id, poids, imc) VALUES (?, ?, ?)', [userId, poids, imc]);
     res.json({ success: true });
 });
-
+app.delete('/weights/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [result] = await db.query('DELETE FROM weights WHERE id = ?', [id]);
+        if (result.affectedRows > 0) {
+            res.json({ success: true, message: 'Mesure supprimée avec succès' });
+        } else {
+            res.json({ success: false, message: 'Mesure non trouvée' });
+        }
+    } catch (err) {
+        res.json({ success: false, message: err.message });
+    }
+});
 app.listen(3001, () => console.log('Back-end running on port 3001'));

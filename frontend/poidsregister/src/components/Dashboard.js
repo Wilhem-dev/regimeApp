@@ -30,6 +30,8 @@ function Dashboard({ userId, handleLogout }) {
   const [userInfo, setUserInfo] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
   const [selectedDataType, setSelectedDataType] = useState('poids'); // 'poids' ou 'imc'
+  const [selectedHistoryPeriod, setSelectedHistoryPeriod] = useState('Tout');
+  const [historySortOrder, setHistorySortOrder] = useState('desc'); // 'desc' = récent au plus ancien, 'asc' = ancien au plus récent
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     currentWeight: 0,
@@ -112,6 +114,60 @@ function Dashboard({ userId, handleLogout }) {
       console.error('Error adding weight:', error);
       alert('Erreur lors de l\'ajout du poids');
     }
+  };
+
+  const handleDeleteWeight = async (id) => {
+    if (!window.confirm('Confirmer la suppression de cette mesure ?')) return;
+
+    try {
+      await fetch(`http://localhost:3001/weights/${id}`, {
+        method: 'DELETE'
+      });
+      await fetchWeights();
+    } catch (error) {
+      console.error('Error deleting weight:', error);
+      alert('Erreur lors de la suppression');
+    }
+  };
+
+  const getFilteredHistoryWeights = () => {
+    let sortedWeights = [...weights].sort((a, b) => 
+      new Date(b.date_mesure) - new Date(a.date_mesure)
+    );
+
+    if (selectedHistoryPeriod === '7d') {
+      sortedWeights = sortedWeights.slice(0, 7);
+    } else if (selectedHistoryPeriod === '30d') {
+      sortedWeights = sortedWeights.slice(0, 30);
+    }
+
+    // Appliquer l'ordre de tri
+    if (historySortOrder === 'asc') {
+      sortedWeights = sortedWeights.reverse();
+    }
+
+    return sortedWeights;
+  };
+
+  const getWeightDifference = (weight, allWeights) => {
+    // Trouver tous les poids triés par date (du plus ancien au plus récent)
+    const sortedByDate = [...allWeights].sort((a, b) => 
+      new Date(a.date_mesure) - new Date(b.date_mesure)
+    );
+
+    // Trouver l'index du poids actuel
+    const currentIndex = sortedByDate.findIndex(w => w.id === weight.id);
+    
+    // Si c'est le premier poids (plus ancien), pas de différence
+    if (currentIndex === 0) {
+      return null;
+    }
+    
+    // Calculer la différence avec le poids précédent (temporellement)
+    const previousWeight = sortedByDate[currentIndex - 1].poids;
+    const difference = weight.poids - previousWeight;
+    
+    return difference;
   };
 
   const getChartData = () => {
@@ -535,6 +591,18 @@ function Dashboard({ userId, handleLogout }) {
       boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
       whiteSpace: 'nowrap',
     },
+    deleteButton: {
+      background: 'linear-gradient(135deg, #f56565 0%, #c53030 100%)',
+      color: 'white',
+      padding: '0.5rem 1rem',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '0.85rem',
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      boxShadow: '0 3px 10px rgba(245, 101, 101, 0.25)',
+    },
     weightListSection: {
       background: 'white',
       borderRadius: '20px',
@@ -690,6 +758,50 @@ function Dashboard({ userId, handleLogout }) {
             }
             .bmi-legend {
               justify-content: flex-start !important;
+            }
+          }
+          @media (max-width: 480px) {
+            .main-content {
+              padding: 0.75rem !important;
+            }
+            nav {
+              padding: 1rem !important;
+            }
+            .stats-grid {
+              gap: 1rem !important;
+            }
+            .statCard, .stat-card {
+              padding: 1rem !important;
+            }
+            .chart-container, .chartContainer {
+              height: 300px !important;
+            }
+            .add-weight-form {
+              gap: 0.5rem !important;
+            }
+            .weightItem, .weight-item, li {
+              flex-direction: column !important;
+              align-items: flex-start !important;
+              gap: 0.5rem;
+            }
+            .weightItem button, .delete-button {
+              align-self: flex-end !important;
+            }
+            input[type="number"] {
+              font-size: 1rem !important;
+              padding: 0.9rem !important;
+            }
+            button {
+              font-size: 0.95rem !important;
+            }
+            /* Masquer l'entête de la liste sur petits écrans */
+            .weight-item-header {
+              display: none !important;
+            }
+            /* Espacement vertical pour chaque champ dans l'historique */
+            .weight-item {
+              width: 100% !important;
+              padding: 0.75rem 0.5rem !important;
             }
           }
         `}
@@ -914,26 +1026,68 @@ function Dashboard({ userId, handleLogout }) {
 
             {/* Historique des poids */}
             <div style={styles.weightListSection}>
-              <h3 style={styles.listTitle}>Historique des Mesures</h3>
+              <div style={styles.chartHeader} className="chart-header">
+                <h3 style={styles.listTitle}>Historique des Mesures</h3>
+                <div style={{display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap'}}>
+                  <div style={styles.periodSelector}>
+                    {['7d', '30d', 'Tout'].map((period) => (
+                      <button
+                        key={period}
+                        style={{
+                          ...styles.periodButton,
+                          ...(selectedHistoryPeriod === period ? styles.activePeriod : {})
+                        }}
+                        onClick={() => setSelectedHistoryPeriod(period)}
+                      >
+                        {period === '7d' ? '7 jours' : period === '30d' ? '30 jours' : 'Tout'}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={styles.periodSelector}>
+                    <button
+                      style={{
+                        ...styles.periodButton,
+                        ...(historySortOrder === 'desc' ? styles.activePeriod : {})
+                      }}
+                      onClick={() => setHistorySortOrder('desc')}
+                      title="Du plus récent au plus ancien"
+                    >
+                      ↓ Récent
+                    </button>
+                    <button
+                      style={{
+                        ...styles.periodButton,
+                        ...(historySortOrder === 'asc' ? styles.activePeriod : {})
+                      }}
+                      onClick={() => setHistorySortOrder('asc')}
+                      title="Du plus ancien au plus récent"
+                    >
+                      ↑ Ancien
+                    </button>
+                  </div>
+                </div>
+              </div>
               {weights.length > 0 ? (
                 <>
-                  <div style={styles.weightItemHeader}>
+                  <div style={styles.weightItemHeader} className="weight-item-header">
                     <span>Poids</span>
                     <span>Date</span>
+                    <span>Variation</span>
                     <span>IMC</span>
+                    <span>Supprimer</span>
                   </div>
-                  <ul style={styles.weightList}>
-                    {[...weights]
-                      .sort((a, b) => new Date(b.date_mesure) - new Date(a.date_mesure))
-                      .map((weight) => {
+                  <ul style={styles.weightList} className="weight-list">
+                    {getFilteredHistoryWeights().map((weight) => {
                         // Calculer l'IMC pour chaque mesure
                         const height = userInfo?.taille || 1.75;
                         const bmiValue = (weight.poids / (height * height)).toFixed(1);
                         const bmiColor = getBMIColorFromValue(bmiValue);
+                        const difference = getWeightDifference(weight, weights);
                         
-                        return (
+                          return (
                           <li
                             key={weight.id}
+                            className="weight-item"
                             style={styles.weightItem}
                             onMouseEnter={handleItemHover}
                             onMouseLeave={handleItemLeave}
@@ -950,6 +1104,14 @@ function Dashboard({ userId, handleLogout }) {
                             </span>
                             <span 
                               style={{
+                                fontWeight: 'bold',
+                                color: difference === null ? '#a0aec0' : (difference > 0 ? '#f56565' : '#48bb78')
+                              }}
+                            >
+                              {difference === null ? '—' : (difference > 0 ? '↑ ' : '↓ ') + Math.abs(difference).toFixed(1) + ' kg'}
+                            </span>
+                            <span 
+                              style={{
                                 ...styles.weightBmi,
                                 color: bmiColor,
                                 fontWeight: 'bold'
@@ -957,6 +1119,20 @@ function Dashboard({ userId, handleLogout }) {
                             >
                               {bmiValue}
                             </span>
+                            <button
+                              className="delete-button"
+                              onClick={() => handleDeleteWeight(weight.id)}
+                              style={{...styles.deleteButton, marginLeft: '1rem', padding: '0.4rem 0.6rem'}}
+                              title="Supprimer"
+                              aria-label="Supprimer la mesure"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                                <path d="M3 6h18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                <path d="M8 6l1-3h6l1 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                <path d="M10 11v6M14 11v6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                              </svg>
+                            </button>
                           </li>
                         );
                       })}

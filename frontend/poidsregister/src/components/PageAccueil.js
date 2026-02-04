@@ -261,6 +261,18 @@ export default function PageAccueil({ onLoginClick }) {
               order: -1;
             }
           }
+          @media (max-width: 480px) {
+            .hero-content { grid-template-columns: 1fr !important; gap: 2rem !important; }
+            .hero-title { font-size: 2rem !important; }
+            .hero-description { font-size: 1rem !important; }
+            .btn-primary, .btnPrimary { width: 100% !important; padding: 0.9rem 1rem !important; }
+            .mockup { padding: 1rem !important; }
+            .chart-preview, .chartPreview { height: 160px !important; }
+            .features { padding: 3rem 3% !important; }
+            .cta { padding: 3rem 3% !important; }
+            header { padding: 0.6rem 3% !important; }
+            .nav { gap: 1rem !important; }
+          }
         `}
       </style>
 
