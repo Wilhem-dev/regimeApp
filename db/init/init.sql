@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     sexe ENUM('homme','femme','autre') NOT NULL,
     age INT NOT NULL,
+    taille FLOAT DEFAULT NULL,
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

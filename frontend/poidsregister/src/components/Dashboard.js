@@ -46,10 +46,24 @@ function Dashboard({ userId, handleLogout }) {
   }, [userId]);
 
   useEffect(() => {
+    if (!userId) return;
+    const fetchUserInfo = async () => {
+      try {
+        const res = await fetch(`http://localhost:3001/users/${userId}`);
+        const data = await res.json();
+        setUserInfo(data);
+      } catch (err) {
+        console.error('Error fetching user info:', err);
+      }
+    };
+    fetchUserInfo();
+  }, [userId]);
+
+  useEffect(() => {
     if (weights.length > 0) {
       calculateStats();
     }
-  }, [weights]);
+  }, [weights, userInfo]);
 
   const fetchWeights = async () => {
     setIsLoading(true);
@@ -190,7 +204,7 @@ function Dashboard({ userId, handleLogout }) {
     });
 
     // Calculer l'IMC pour chaque mesure si ce n'est pas déjà fait
-    const height = userInfo?.taille || 1.75;
+    const height = userInfo?.taille || 1.70;
     const dataPoints = filteredWeights.map(w => {
       if (selectedDataType === 'poids') {
         return w.poids;
@@ -835,9 +849,7 @@ function Dashboard({ userId, handleLogout }) {
             Suivez votre évolution et atteignez vos objectifs santé
           </p>
           <div style={styles.userStats}>
-            {userInfo?.age && (
-              <span style={styles.userStatItem}>Âge: {userInfo.age} ans</span>
-            )}
+            
             {userInfo?.poids && (
               <span style={styles.userStatItem}>Poids initial: {userInfo.poids} kg</span>
             )}

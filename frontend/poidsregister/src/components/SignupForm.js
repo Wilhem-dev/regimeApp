@@ -6,13 +6,15 @@ function SignupForm({ setUserId, switchToLogin }) {
   const [sexe, setSexe] = useState('homme');
   const [age, setAge] = useState('');
   const [poids, setPoids] = useState('');
+  const [taille, setTaille] = useState('');
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    const tailleMeters = taille ? parseFloat(taille) / 100 : null;
     const res = await fetch('http://localhost:3001/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, sexe, age, poids })
+      body: JSON.stringify({ email, password, sexe, age, poids, taille: tailleMeters })
     });
     const data = await res.json();
     if (data.success) setUserId(data.userId);
@@ -276,6 +278,20 @@ function SignupForm({ setUserId, switchToLogin }) {
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
                 min="1"
+                required
+                style={styles.input}
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <input
+                placeholder="Taille (cm)"
+                type="number"
+                value={taille}
+                onChange={e => setTaille(e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                min="30"
+                max="300"
                 required
                 style={styles.input}
               />
