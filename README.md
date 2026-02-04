@@ -15,6 +15,37 @@ Une application web de suivi du poids utilisant une architecture microservices a
 L'application suit une architecture **microservices** modulaire et scalable, déployée entièrement avec **Docker**.
 
 ---
+## 📁 Structure du projet
+
+```
+projet docker/
+├── docker-compose.yml          # Orchestration des services
+├── README.md                   # Ce fichier
+│
+├── backend/                    # Service API Node.js
+│   ├── Dockerfile
+│   ├── server.js              # Point d'entrée
+│   ├── package.json
+│   └── node_modules/
+│
+├── frontend/                   # Service Interface Web
+│   └── poidsregister/
+│       ├── Dockerfile
+│       ├── package.json
+│       ├── public/            # Fichiers statiques
+│       │   └── index.html
+│       └── src/               # Code source React
+│           ├── App.js
+│           ├── components/
+│           ├── index.js
+│           └── ...
+│
+└── db/                         # Configuration Base de Données
+    └── init/
+        └── init.sql          # Scripts d'initialisation
+```
+
+---
 
 ## 🏗️ Architecture
 
@@ -102,6 +133,7 @@ frontend/poidsregister/
 | `POST`  | `/login`           | Authentifier un utilisateur     |
 | `GET`   | `/weights/:userId` | Récupérer l'historique du poids |
 | `POST`  | `/weights`         | Enregistrer une nouvelle pesée  |
+| `Delete`| `/weights/id`      | supprimer une pesée            |
 
 **Fonctionnalités** :
 
@@ -140,6 +172,7 @@ frontend/poidsregister/
 - password (VARCHAR)
 - sexe (VARCHAR)
 - age (INT)
+- taille (FLOAT)
 ```
 
 **Table `weights`** :
@@ -235,37 +268,6 @@ Vous devriez voir 3 services actifs : `db`, `backend`, `frontend`
 
 ---
 
-## 📁 Structure du projet
-
-```
-projet docker/
-├── docker-compose.yml          # Orchestration des services
-├── README.md                   # Ce fichier
-│
-├── backend/                    # Service API Node.js
-│   ├── Dockerfile
-│   ├── server.js              # Point d'entrée
-│   ├── package.json
-│   └── node_modules/
-│
-├── frontend/                   # Service Interface Web
-│   └── poidsregister/
-│       ├── Dockerfile
-│       ├── package.json
-│       ├── public/            # Fichiers statiques
-│       │   └── index.html
-│       └── src/               # Code source React
-│           ├── App.js
-│           ├── components/
-│           ├── index.js
-│           └── ...
-│
-└── db/                         # Configuration Base de Données
-    └── init/
-        └── init.sql          # Scripts d'initialisation
-```
-
----
 
 ## 📝 Notes importantes
 
@@ -354,3 +356,4 @@ kubectl get svc
 ![k8s](img/img7.png)
 ![k8s](img/img8.png)
 ![k8s](img/img9.png)
+
